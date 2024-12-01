@@ -116,7 +116,7 @@ Once again consider your left and right lists. **What is their similarity score?
 
 |    Day | Part 1 | Part 2 |
 |-------:|:-------|:-------|
-| **01** | 316μs  | 251μs  |
+| **01** | 213μs  | 178μs  |
 | **02** |        |        |
 | **03** |        |        |
 | **04** |        |        |

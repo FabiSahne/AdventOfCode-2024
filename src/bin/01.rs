@@ -27,22 +27,24 @@ fn main() -> Result<()> {
     println!("=== Part 1 ===");
 
     #[allow(clippy::items_after_statements)]
-
     fn part1<R: BufRead>(reader: R) -> Result<i32> {
         let (mut left, mut right) = reader.lines().fold(
             (BinaryHeap::new(), BinaryHeap::new()),
             |(mut left, mut right), line| {
-                let line = line.unwrap();
+                let line = line.expect("line should exist");
                 let line = line.split_whitespace().collect::<Vec<&str>>();
-                left.push(Reverse(line[0].parse::<i32>().unwrap()));
-                right.push(Reverse(line[1].parse::<i32>().unwrap()));
+                left.push(Reverse(line[0].parse::<i32>().unwrap_or(0)));
+                right.push(Reverse(line[1].parse::<i32>().unwrap_or(0)));
                 (left, right)
             },
         );
 
         let mut answer = 0;
         for _ in 0..left.len() {
-            let (Reverse(left), Reverse(right)) = (left.pop().unwrap(), right.pop().unwrap());
+            let (Reverse(left), Reverse(right)) = (
+                left.pop().expect("left should contain data"),
+                right.pop().expect("right should contain data"),
+            );
             answer += (left - right).abs();
         }
 
@@ -61,21 +63,19 @@ fn main() -> Result<()> {
 
     #[allow(clippy::items_after_statements)]
     fn part2<R: BufRead>(reader: R) -> Result<i32> {
-        let (mut left, right) =
+        let (mut left, freq_table) =
             reader
                 .lines()
-                .fold((vec![], vec![]), |(mut left, mut right), line| {
-                    let line = line.unwrap();
+                .fold((vec![], HashMap::new()), |(mut left, mut right), line| {
+                    let line = line.expect("line should exist");
                     let line = line.split_whitespace().collect::<Vec<&str>>();
-                    left.push(line[0].parse::<i32>().unwrap());
-                    right.push(line[1].parse::<i32>().unwrap());
+                    left.push(line[0].parse::<i32>().unwrap_or(0));
+                    right
+                        .entry(line[1].parse::<i32>().unwrap_or(0))
+                        .and_modify(|e| *e += 1)
+                        .or_insert(1);
                     (left, right)
                 });
-
-        let mut freq_table = HashMap::new();
-        for n in right {
-            freq_table.entry(n).and_modify(|e| *e += 1).or_insert(1);
-        }
 
         for n in &mut left {
             *n *= freq_table.get(n).unwrap_or(&0);

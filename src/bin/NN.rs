@@ -20,7 +20,6 @@ fn main() -> Result<()> {
     println!("=== Part 1 ===");
 
     #[allow(clippy::items_after_statements)]
-
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
         // TODO: Solve Part 1 of the puzzle
         let answer = reader.lines().map_while(Result::ok).count();
