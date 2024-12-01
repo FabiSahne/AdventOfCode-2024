@@ -1,3 +1,4 @@
+#![allow(clippy::wildcard_imports)]
 use adv_code_2024::*;
 use anyhow::*;
 use code_timing_macros::time_snippet;
@@ -25,15 +26,19 @@ fn main() -> Result<()> {
     //region Part 1
     println!("=== Part 1 ===");
 
-    fn part1<R: BufRead>(reader: R) -> Result<i32> {
-        let (mut left, mut right) = (BinaryHeap::new(), BinaryHeap::new());
+    #[allow(clippy::items_after_statements)]
 
-        for line in reader.lines() {
-            let line = line?;
-            let line = line.split_whitespace().collect::<Vec<&str>>();
-            left.push(Reverse(line[0].parse::<i32>()?));
-            right.push(Reverse(line[1].parse::<i32>()?));
-        }
+    fn part1<R: BufRead>(reader: R) -> Result<i32> {
+        let (mut left, mut right) = reader.lines().fold(
+            (BinaryHeap::new(), BinaryHeap::new()),
+            |(mut left, mut right), line| {
+                let line = line.unwrap();
+                let line = line.split_whitespace().collect::<Vec<&str>>();
+                left.push(Reverse(line[0].parse::<i32>().unwrap()));
+                right.push(Reverse(line[1].parse::<i32>().unwrap()));
+                (left, right)
+            },
+        );
 
         let mut answer = 0;
         for _ in 0..left.len() {
@@ -48,12 +53,13 @@ fn main() -> Result<()> {
 
     let input_file = BufReader::new(File::open(INPUT_FILE)?);
     let result = time_snippet!(part1(input_file)?);
-    println!("Result = {}", result);
+    println!("Result = {result}");
     //endregion
 
     //region Part 2
     println!("\n=== Part 2 ===");
 
+    #[allow(clippy::items_after_statements)]
     fn part2<R: BufRead>(reader: R) -> Result<i32> {
         let (mut left, right) =
             reader
@@ -71,7 +77,7 @@ fn main() -> Result<()> {
             freq_table.entry(n).and_modify(|e| *e += 1).or_insert(1);
         }
 
-        for n in left.iter_mut() {
+        for n in &mut left {
             *n *= freq_table.get(n).unwrap_or(&0);
         }
 
@@ -84,7 +90,7 @@ fn main() -> Result<()> {
 
     let input_file = BufReader::new(File::open(INPUT_FILE)?);
     let result = time_snippet!(part2(input_file)?);
-    println!("Result = {}", result);
+    println!("Result = {result}");
     //endregion
 
     Ok(())
