@@ -1,4 +1,3 @@
-#![allow(clippy::wildcard_imports)]
 use adv_code_2024::*;
 use anyhow::*;
 use code_timing_macros::time_snippet;
@@ -26,7 +25,6 @@ fn main() -> Result<()> {
     //region Part 1
     println!("=== Part 1 ===");
 
-    #[allow(clippy::items_after_statements)]
     fn part1<R: BufRead>(reader: R) -> Result<i32> {
         let (mut left, mut right) = reader.lines().fold(
             (BinaryHeap::new(), BinaryHeap::new()),
@@ -61,7 +59,6 @@ fn main() -> Result<()> {
     //region Part 2
     println!("\n=== Part 2 ===");
 
-    #[allow(clippy::items_after_statements)]
     fn part2<R: BufRead>(reader: R) -> Result<i32> {
         let (mut left, freq_table) =
             reader

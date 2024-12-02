@@ -9,14 +9,32 @@ pub fn start_day(day: &str) {
 // Additional common functions
 
 /// Reads Lines from reader into Vector containing Vectors of line contents split by whitespace
+/// and parsed to T
 ///
+/// # Example
+///
+/// ```
+///  "\
+///
+/// 1 2 3
+///  4 5 6
+///  "
+/// ```
+/// will turn into:
+/// ```
+/// vec![
+///     vec![1, 2, 3],
+///     vec![4, 5, 6],
+/// ]
+///```
 /// # Errors
 ///
 /// This function has the same error semantics as [`BufRead::read_until`] and will also return an
 /// error if the read bytes are not valid UTF-8. If an I/ O error is encountered then buf may
 /// contain some bytes already read in the event that all data read so far was valid UTF-8.
-pub fn read_lines_to_vec<R: BufRead, T>(reader: R) -> Result<Vec<Vec<T>>>
+pub fn read_lines_to_vec_vec_parsed<R, T>(reader: R) -> Result<Vec<Vec<T>>>
 where
+    R: BufRead,
     T: FromStr + Default,
 {
     let mut vec = vec![];

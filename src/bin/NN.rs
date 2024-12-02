@@ -1,4 +1,3 @@
-#![allow(clippy::wildcard_imports)]
 use adv_code_2024::*;
 use anyhow::*;
 use code_timing_macros::time_snippet;
@@ -19,7 +18,6 @@ fn main() -> Result<()> {
     //region Part 1
     println!("=== Part 1 ===");
 
-    #[allow(clippy::items_after_statements)]
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
         // TODO: Solve Part 1 of the puzzle
         let answer = reader.lines().map_while(Result::ok).count();
@@ -37,7 +35,6 @@ fn main() -> Result<()> {
     //region Part 2
     // println!("\n=== Part 2 ===");
     //
-    // #[allow(clippy::items_after_statements)]
     // fn part2<R: BufRead>(reader: R) -> Result<usize> {
     //     Ok(0)
     // }
