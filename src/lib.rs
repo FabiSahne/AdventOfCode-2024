@@ -12,9 +12,9 @@ pub fn start_day(day: &str) {
 ///
 /// # Errors
 ///
-/// This function has the same error semantics as [`BufRead::read_until`] and will also return an error if the
-/// read bytes are not valid UTF-8. If an I/ O error is encountered then buf may contain some bytes
-/// already read in the event that all data read so far was valid UTF-8.
+/// This function has the same error semantics as [`BufRead::read_until`] and will also return an
+/// error if the read bytes are not valid UTF-8. If an I/ O error is encountered then buf may
+/// contain some bytes already read in the event that all data read so far was valid UTF-8.
 pub fn read_lines_to_vec<R: BufRead, T>(reader: R) -> Result<Vec<Vec<T>>>
 where
     T: FromStr + Default,
