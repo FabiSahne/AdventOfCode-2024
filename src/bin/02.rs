@@ -26,29 +26,14 @@ fn main() -> Result<()> {
 
     //region Part 1
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
-        let mut reports = vec![];
-        for rline in reader.lines() {
-            let line = rline?;
-            reports.push(
-                line.split_whitespace()
-                    .map(|s| s.parse::<i32>().unwrap_or(0))
-                    .collect::<Vec<i32>>(),
-            );
-        }
+        let reports = read_lines_to_vec(reader)?;
 
         let answer = reports.into_iter().filter(|r| is_safe(r)).count();
 
         Ok(answer)
     }
     fn is_safe(report: &[i32]) -> bool {
-        assert!(report.len() >= 2);
-        if report[1] > report[0] && report[1] <= report[0] + 3 {
-            return is_ascending(report);
-        }
-        if report[0] > report[1] && report[0] <= report[1] + 3 {
-            return is_descending(report);
-        }
-        false
+        is_ascending(report) || is_descending(report)
     }
     fn is_ascending(report: &[i32]) -> bool {
         report.windows(2).all(|w| w[1] > w[0] && w[1] <= w[0] + 3)
@@ -65,18 +50,32 @@ fn main() -> Result<()> {
     //endregion
 
     //region Part 2
-    // println!("\n=== Part 2 ===");
-    //
-    // #[allow(clippy::items_after_statements)]
-    // fn part2<R: BufRead>(reader: R) -> Result<usize> {
-    //     Ok(0)
-    // }
-    //
-    // assert_eq!(0, part2(BufReader::new(TEST.as_bytes()))?);
-    //
-    // let input_file = BufReader::new(File::open(INPUT_FILE)?);
-    // let result = time_snippet!(part2(input_file)?);
-    // println!("Result = {result}");
+    println!("\n=== Part 2 ===");
+
+    fn part2<R: BufRead>(reader: R) -> Result<usize> {
+        let reports = read_lines_to_vec(reader)?;
+
+        let answer = reports.into_iter().filter(is_safe2).count();
+
+        Ok(answer)
+    }
+    #[allow(clippy::ptr_arg)]
+    fn is_safe2(report: &Vec<i32>) -> bool {
+        for i in 0..report.len() {
+            let mut test = report.clone();
+            test.remove(i);
+            if is_safe(&test) {
+                return true;
+            }
+        }
+        false
+    }
+
+    assert_eq!(4, part2(BufReader::new(TEST.as_bytes()))?);
+
+    let input_file = BufReader::new(File::open(INPUT_FILE)?);
+    let result = time_snippet!(part2(input_file)?);
+    println!("Result = {result}");
     //endregion
 
     Ok(())
