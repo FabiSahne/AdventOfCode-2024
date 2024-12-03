@@ -12,7 +12,7 @@ list before Santa takes off on December 25th.
 Collect stars by solving puzzles. Two puzzles will be made available on each day in the Advent calendar; the second
 puzzle is unlocked when you complete the first. Each puzzle grants _one star_. Good luck!
 
-## Day 01
+## Day 01: Historian Hysteria
 
 You haven't even left yet and the group of Elvish Senior Historians has already hit a problem: their list of locations
 to check is currently **empty**. Eventually, someone decides that the best place to check first would be the Chief
@@ -110,7 +110,7 @@ So, for these example lists, the similarity score at the end of this process is 
 
 Once again consider your left and right lists. **What is their similarity score?**
 
-## Day 02
+## Day 02: Red-Nosed Reports
 
 Fortunately, the first location The Historians want to search isn't a long walk from the Chief Historian's office.
 
@@ -181,7 +181,7 @@ Thanks to the Problem Dampener, `4` reports are actually **safe**!
 Update your analysis by handling situations where the Problem Dampener can remove a single level from unsafe reports.
 **How many reports are now safe?**
 
-## Day 03
+## Day 03: Mull It Over
 
 "Our computers are having issues, so I have no idea if we have any Chief Historians in stock! You're welcome to check
 the warehouse, though," says the mildly flustered shopkeeper at the
