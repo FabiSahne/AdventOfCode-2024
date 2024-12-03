@@ -1,5 +1,5 @@
 use adv_code_2024::*;
-use anyhow::*;
+use anyhow::Result;
 use code_timing_macros::time_snippet;
 use const_format::concatcp;
 use regex::Regex;
@@ -18,8 +18,8 @@ fn calc(text: &str) -> Result<usize> {
     Ok(re
         .captures_iter(text)
         .map(|caps| {
-            let m1 = caps.name("m1").unwrap().as_str().parse::<usize>().unwrap();
-            let m2 = caps.name("m2").unwrap().as_str().parse::<usize>().unwrap();
+            let m1 = caps["m1"].parse::<usize>().expect("m1 has to be a number");
+            let m2 = caps["m2"].parse::<usize>().expect("m2 has to be a number");
             m1 * m2
         })
         .sum())
@@ -34,6 +34,7 @@ fn main() -> Result<()> {
     fn part1<R: BufRead>(mut reader: R) -> Result<usize> {
         let mut text = String::new();
         reader.read_to_string(&mut text)?;
+
         calc(text.as_str())
     }
 
@@ -50,17 +51,19 @@ fn main() -> Result<()> {
     fn part2<R: BufRead>(mut reader: R) -> Result<usize> {
         let mut text = String::new();
         reader.read_to_string(&mut text)?;
-        while let Some(dont) = text.find("don't()") {
-            if let Some(do_) = text.find("do()") {
-                if do_ < dont {
-                    text.replace_range(do_..(do_ + 4), "..");
+
+        while let Some(dont_pos) = text.find("don't()") {
+            if let Some(do_pos) = text.find("do()") {
+                if do_pos < dont_pos {
+                    text.replace_range(do_pos..(do_pos + 4), "");
                 } else {
-                    text.replace_range(dont..(do_ + 4), "");
+                    text.replace_range(dont_pos..(do_pos + 4), "");
                 }
             } else {
-                text.replace_range(dont.., "");
+                text.replace_range(dont_pos.., "");
             }
         }
+
         calc(text.as_str())
     }
 
