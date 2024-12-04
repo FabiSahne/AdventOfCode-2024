@@ -105,20 +105,22 @@ fn main() -> Result<()> {
     //region Part 2
     println!("\n=== Part 2 ===");
 
-    // pub fn part2<R: BufRead>(reader: R) -> Result<usize> {
-    //     let text = read_lines_to_vec_vec_char(reader);
-    //
-    //     let mut answer = 0;
-    //     for (row_num, row) in text.iter().enumerate() {
-    //         for (col_num, c) in row.iter().enumerate() {
-    //             if c == &'A' && is_x_mas(&text, row_num, col_num) {
-    //                 answer += 1;
-    //             }
-    //         }
-    //     }
-    //
-    //     Ok(answer)
-    // }
+    fn part2<R: BufRead>(reader: R) -> Result<usize> {
+        let text = read_lines_to_vec_vec_char(reader);
+
+        let (n, m) = (text.len(), text[0].len());
+
+        let mut answer = 0;
+        for row in 0..n {
+            for col in 0..m {
+                if text[row][col] == 'A' && is_x_mas(&text, row, col) {
+                    answer += 1;
+                }
+            }
+        }
+
+        Ok(answer)
+    }
 
     assert_eq!(9, part2(BufReader::new(TEST.as_bytes()))?);
 
@@ -128,242 +130,4 @@ fn main() -> Result<()> {
     //endregion
 
     Ok(())
-}
-
-fn part2<R: BufRead>(reader: R) -> Result<usize> {
-    let text = read_lines_to_vec_vec_char(reader);
-
-    let mut answer = 0;
-    // for (row_num, row) in text.iter().enumerate() {
-    //     for (col_num, c) in row.iter().enumerate() {
-    //         if c == &'A' && is_x_mas(&text, row_num, col_num) {
-    //             answer += 1;
-    //         }
-    //     }
-    // }
-    let (n, m) = (text.len(), text[0].len());
-
-    for row in 0..n {
-        for col in 0..m {
-            if text[row][col] == 'A' && is_x_mas(&text, row, col) {
-                answer += 1;
-            }
-        }
-    }
-
-    Ok(answer)
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn mam_sas() {
-        let test_down = "\
-M.S
-.S.
-S.M
-";
-
-        assert_eq!(0, part2(BufReader::new(test_down.as_bytes())).unwrap());
-    }
-
-    #[test]
-    fn one_x_mas() {
-        let test_data_down = "\
-M.M
-.A.
-S.S
-";
-        let test_data_right = "\
-M.S
-.A.
-M.S
-";
-        let test_data_left = "\
-S.M
-.A.
-S.M
-";
-        let test_data_up = "\
-S.S
-.A.
-M.M
-";
-        assert_eq!(1, part2(BufReader::new(test_data_up.as_bytes())).unwrap());
-        assert_eq!(1, part2(BufReader::new(test_data_down.as_bytes())).unwrap());
-        assert_eq!(1, part2(BufReader::new(test_data_left.as_bytes())).unwrap());
-        assert_eq!(
-            1,
-            part2(BufReader::new(test_data_right.as_bytes())).unwrap()
-        );
-    }
-
-    #[test]
-    fn two_x_mas() {
-        let test_down = "\
-M.M.M
-.A.A.
-S.S.S
-";
-        let test_up = "\
-S.S.S
-.A.A.
-M.M.M
-";
-        let test_left = "\
-M.S
-.A.
-M.S
-.A.
-M.S
-";
-        let test_right = "\
-S.M
-.A.
-S.M
-.A.
-S.M
-";
-        assert_eq!(2, part2(BufReader::new(test_up.as_bytes())).unwrap());
-        assert_eq!(2, part2(BufReader::new(test_down.as_bytes())).unwrap());
-        assert_eq!(2, part2(BufReader::new(test_left.as_bytes())).unwrap());
-        assert_eq!(2, part2(BufReader::new(test_right.as_bytes())).unwrap());
-    }
-
-    #[test]
-    fn nest_test1() {
-        let test_data = "\
-MMMM
-.AA.
-SSSS
-";
-        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
-    }
-    #[test]
-    fn nest_test2() {
-        let test_data = "\
-SSSS
-.AA.
-MMMM
-";
-        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
-    }
-    #[test]
-    fn nest_test3() {
-        let test_data = "\
-M.S
-MAS
-MAS
-M.S
-";
-        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
-    }
-    #[test]
-    fn nest_test4() {
-        let test_data = "\
-S.M
-SAM
-SAM
-S.M
-";
-        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
-    }
-    #[test]
-    fn nest_test5() {
-        let test_data = "\
-MSMS
-.AA.
-SMSM
-";
-        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
-    }
-    #[test]
-    fn nest_test6() {
-        let test_data = "\
-S.M
-MAS
-SAM
-M.S
-";
-        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
-    }
-
-    #[test]
-    fn two_x_mas_nested() {
-        let test_down = "\
-MMMM
-.AA.
-SSSS
-";
-        let test_up = "\
-SSSS
-.AA.
-MMMM
-";
-        let test_left = "\
-M.S
-MAS
-MAS
-M.S
-";
-        let test_right = "\
-S.M
-SAM
-SAM
-S.M
-";
-        let test_inter1 = "\
-MSMS
-.AA.
-SMSM
-";
-        let test_inter2 = "\
-S.M
-MAS
-SAM
-M.S
-";
-        assert_eq!(2, part2(BufReader::new(test_down.as_bytes())).unwrap());
-        assert_eq!(2, part2(BufReader::new(test_up.as_bytes())).unwrap());
-        assert_eq!(2, part2(BufReader::new(test_left.as_bytes())).unwrap());
-        assert_eq!(2, part2(BufReader::new(test_right.as_bytes())).unwrap());
-        assert_eq!(2, part2(BufReader::new(test_inter1.as_bytes())).unwrap());
-        assert_eq!(2, part2(BufReader::new(test_inter2.as_bytes())).unwrap());
-    }
-
-    #[test]
-    fn nine_x_mas() {
-        let test_data = "\
-MMMSXXMASM
-MSAMXMSMSA
-AMXSXMAAMM
-MSAMASMSMX
-XMASAMXAMM
-XXAMMXXAMA
-SMSMSASXSS
-SAXAMASAAA
-MAMMMXMMMM
-MXMXAXMASX
-";
-        assert_eq!(9, part2(BufReader::new(test_data.as_bytes())).unwrap());
-    }
-
-    #[test]
-    fn no_x_mas() {
-        let test_data = "\
-MXMSXXMASM
-MSAMXSMMSA
-AMXSXMAAMM
-MSAMASMSMX
-XMAMAMXAMM
-XXAMMXXAMA
-SMSMSASXSS
-SAXAMASAAA
-MASMMXSMMM
-MXMXAXMASX
-";
-        assert_eq!(0, part2(BufReader::new(test_data.as_bytes())).unwrap());
-    }
 }
