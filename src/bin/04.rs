@@ -63,27 +63,10 @@ fn is_x_mas(text: &[Vec<char>], row: usize, col: usize) -> bool {
     if row == 0 || col == 0 || row == text.len() - 1 || col == text[0].len() - 1 {
         false
     } else {
-        let x_chars = [
-            text[row + 1][col + 1],
-            text[row + 1][col - 1],
-            text[row - 1][col + 1],
-            text[row - 1][col - 1],
-        ];
-        if x_chars.iter().filter(|c| **c == 'M').count() == 2
-            && x_chars.iter().filter(|c| **c == 'S').count() == 2
-        {
-            println!(
-                "xmas at {row}, {col}: ↖{}, ↗{}, ↙{}, ↘{}, •{}",
-                text[row - 1][col - 1],
-                text[row - 1][col + 1],
-                text[row + 1][col - 1],
-                text[row + 1][col + 1],
-                text[row][col]
-            );
-            true
-        } else {
-            false
-        }
+        let up_left_down_right = [text[row + 1][col + 1], text[row - 1][col - 1]];
+        let up_right_down_left = [text[row + 1][col - 1], text[row - 1][col + 1]];
+        (up_left_down_right == ['M', 'S'] || up_left_down_right == ['S', 'M'])
+            && (up_right_down_left == ['M', 'S'] || up_right_down_left == ['S', 'M'])
     }
 }
 
@@ -176,6 +159,17 @@ mod test {
     use super::*;
 
     #[test]
+    fn mam_sas() {
+        let test_down = "\
+M.S
+.S.
+S.M
+";
+
+        assert_eq!(0, part2(BufReader::new(test_down.as_bytes())).unwrap());
+    }
+
+    #[test]
     fn one_x_mas() {
         let test_data_down = "\
 M.M
@@ -239,13 +233,104 @@ S.M
     }
 
     #[test]
-    fn two_x_mas_nested() {
+    fn nest_test1() {
         let test_data = "\
 MMMM
 .AA.
 SSSS
 ";
         assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
+    }
+    #[test]
+    fn nest_test2() {
+        let test_data = "\
+SSSS
+.AA.
+MMMM
+";
+        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
+    }
+    #[test]
+    fn nest_test3() {
+        let test_data = "\
+M.S
+MAS
+MAS
+M.S
+";
+        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
+    }
+    #[test]
+    fn nest_test4() {
+        let test_data = "\
+S.M
+SAM
+SAM
+S.M
+";
+        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
+    }
+    #[test]
+    fn nest_test5() {
+        let test_data = "\
+MSMS
+.AA.
+SMSM
+";
+        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
+    }
+    #[test]
+    fn nest_test6() {
+        let test_data = "\
+S.M
+MAS
+SAM
+M.S
+";
+        assert_eq!(2, part2(BufReader::new(test_data.as_bytes())).unwrap());
+    }
+
+    #[test]
+    fn two_x_mas_nested() {
+        let test_down = "\
+MMMM
+.AA.
+SSSS
+";
+        let test_up = "\
+SSSS
+.AA.
+MMMM
+";
+        let test_left = "\
+M.S
+MAS
+MAS
+M.S
+";
+        let test_right = "\
+S.M
+SAM
+SAM
+S.M
+";
+        let test_inter1 = "\
+MSMS
+.AA.
+SMSM
+";
+        let test_inter2 = "\
+S.M
+MAS
+SAM
+M.S
+";
+        assert_eq!(2, part2(BufReader::new(test_down.as_bytes())).unwrap());
+        assert_eq!(2, part2(BufReader::new(test_up.as_bytes())).unwrap());
+        assert_eq!(2, part2(BufReader::new(test_left.as_bytes())).unwrap());
+        assert_eq!(2, part2(BufReader::new(test_right.as_bytes())).unwrap());
+        assert_eq!(2, part2(BufReader::new(test_inter1.as_bytes())).unwrap());
+        assert_eq!(2, part2(BufReader::new(test_inter2.as_bytes())).unwrap());
     }
 
     #[test]
