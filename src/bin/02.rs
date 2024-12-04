@@ -34,7 +34,7 @@ fn main() -> Result<()> {
 
     //region Part 1
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
-        let reports = read_lines_to_vec_vec_parsed(reader)?;
+        let reports = read_lines_to_vec_vec_parsed(reader);
 
         let answer = reports.into_iter().filter(|r| is_safe(r)).count();
 
@@ -52,7 +52,7 @@ fn main() -> Result<()> {
     println!("\n=== Part 2 ===");
 
     fn part2<R: BufRead>(reader: R) -> Result<usize> {
-        let reports = read_lines_to_vec_vec_parsed(reader)?;
+        let reports = read_lines_to_vec_vec_parsed(reader);
 
         let answer = reports.into_iter().filter(|r| is_safe2(r)).count();
 

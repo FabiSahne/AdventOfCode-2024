@@ -1,4 +1,3 @@
-use anyhow::Result;
 use std::io::BufRead;
 use std::str::FromStr;
 
@@ -8,45 +7,72 @@ pub fn start_day(day: &str) {
 
 // Additional common functions
 
-/// Reads Lines from reader into Vector containing Vectors of line contents split by whitespace
+/// Reads Lines from `reader` into Vector containing Vectors of line contents split by whitespace
 /// and parsed to T
 ///
 /// # Example
 ///
-/// ```
-///  "\
-///
+///```
+/// use std::io::BufReader;
+/// use adv_code_2024::read_lines_to_vec_vec_parsed;
+/// let before = "\
 /// 1 2 3
-///  4 5 6
-///  "
-/// ```
-/// will turn into:
-/// ```
-/// vec![
+/// 4 5 6";
+/// let after = vec![
 ///     vec![1, 2, 3],
 ///     vec![4, 5, 6],
-/// ]
-///```
-/// # Errors
+/// ];
+/// assert_eq!(after, read_lines_to_vec_vec_parsed(BufReader::new(before.as_bytes())))
+/// ```
+/// # Panics
 ///
-/// This function has the same error semantics as [`BufRead::read_until`] and will also return an
-/// error if the read bytes are not valid UTF-8. If an I/ O error is encountered then buf may
-/// contain some bytes already read in the event that all data read so far was valid UTF-8.
-pub fn read_lines_to_vec_vec_parsed<R, T>(reader: R) -> Result<Vec<Vec<T>>>
+/// This function panics if the read bytes are not valid UTF-8.
+pub fn read_lines_to_vec_vec_parsed<R, T>(reader: R) -> Vec<Vec<T>>
 where
     R: BufRead,
     T: FromStr + Default,
 {
-    let mut vec = vec![];
-    for rline in reader.lines() {
-        let line = rline?;
-        vec.push(
-            line.split_whitespace()
-                .map(|s| s.parse::<T>().unwrap_or_default())
-                .collect::<Vec<T>>(),
-        );
-    }
-    Ok(vec)
+    reader
+        .lines()
+        .map(|l| {
+            l.expect("`reader` should contain text")
+                .split_whitespace()
+                .map(|num| num.parse::<T>().unwrap_or_default())
+                .collect::<Vec<T>>()
+        })
+        .collect::<Vec<Vec<T>>>()
+}
+
+/// Reads contents of `reader` into `Vec<Vec<char>>`. The outer Vector contains the lines,
+/// the inner Vector contains the singular `char`s from the `reader` contents.
+///
+/// # Example
+/// ```
+/// use std::io::BufReader;
+/// use adv_code_2024::read_lines_to_vec_vec_char;
+/// let before = "\
+/// ABC
+/// DEF
+/// ";
+/// let after = vec![
+///     vec!['A','B','C'],
+///     vec!['D','E','F']
+/// ];
+/// assert_eq!(after, read_lines_to_vec_vec_char(BufReader::new(before.as_bytes())))
+/// ```
+///
+/// # Panics
+///
+/// Panics if the read bytes do not contain valid UTF-8.
+pub fn read_lines_to_vec_vec_char<R: BufRead>(reader: R) -> Vec<Vec<char>> {
+    reader
+        .lines()
+        .map(|l| {
+            l.expect("`reader` should contain text")
+                .chars()
+                .collect::<Vec<char>>()
+        })
+        .collect::<Vec<Vec<char>>>()
 }
 
 #[cfg(test)]
