@@ -70,11 +70,11 @@ fn read_data<R: BufRead>(reader: R) -> Result<Data> {
     Ok((ordering, updates))
 }
 
-fn fix_order(a: &usize, b: &usize, ordering: &[Vec<usize>]) -> Ordering {
-    if ordering.contains(&vec![*a, *b]) {
+fn fix_order(a: usize, b: usize, ordering: &[Vec<usize>]) -> Ordering {
+    if ordering.contains(&vec![a, b]) {
         return Ordering::Less;
     }
-    if ordering.contains(&vec![*b, *a]) {
+    if ordering.contains(&vec![b, a]) {
         return Ordering::Greater;
     }
     Ordering::Equal
@@ -133,12 +133,13 @@ fn main() -> Result<()> {
                     if let Some(second) = update.iter().position(|&item| item == order[1]) {
                         if first > second {
                             order_was_incorrect = true;
+                            break;
                         }
                     }
                 }
             }
             if order_was_incorrect {
-                update.sort_unstable_by(|a, b| fix_order(a, b, &ordering));
+                update.sort_unstable_by(|&a, &b| fix_order(a, b, &ordering));
                 answer += update[update.len() / 2];
             }
         }
