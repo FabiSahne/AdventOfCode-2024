@@ -2,6 +2,7 @@ use adv_code_2024::*;
 use anyhow::*;
 use code_timing_macros::time_snippet;
 use const_format::concatcp;
+use std::cmp::PartialEq;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -22,7 +23,26 @@ const TEST: &str = "\
 ......#...
 ";
 
-const DIRECTIONS: [[usize; 2]; 4] = [[0, usize::MAX], [1, 0], [0, 1], [usize::MAX, 0]];
+#[derive(PartialEq, Default)]
+enum Direction {
+    #[default]
+    Up,
+    Right,
+    Down,
+    Left,
+}
+
+impl Direction {
+    fn turn(&mut self) {
+        use crate::Direction::*;
+        match self {
+            Up => *self = Right,
+            Right => *self = Down,
+            Down => *self = Left,
+            Left => *self = Up,
+        }
+    }
+}
 
 fn main() -> Result<()> {
     start_day(DAY);
@@ -31,10 +51,11 @@ fn main() -> Result<()> {
     println!("=== Part 1 ===");
 
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
+        use crate::Direction::*;
         let grid = read_lines_to_vec_vec_char(reader);
         let mut visited = HashSet::new();
         let (rows, cols) = (grid.len(), grid[0].len());
-        let mut dir = 0;
+        let mut dir = Direction::default();
 
         // find starting position
         let mut guard_y = (0..rows)
@@ -47,45 +68,43 @@ fn main() -> Result<()> {
         // traverse
         loop {
             visited.insert((guard_x, guard_y));
-            if guard_y == grid.len() - 1 && dir == 2        // reached bottom
-                || guard_y == 0 && dir == 0                 // reached top
-                || guard_x == grid[0].len() - 1 && dir == 1 // reached right
-                || guard_x == 0 && dir == 3
-            // reached left
+            if guard_y == grid.len() - 1 && dir == Down
+                || guard_y == 0 && dir == Up
+                || guard_x == grid[0].len() - 1 && dir == Right
+                || guard_x == 0 && dir == Left
             {
                 break;
             }
 
             match dir {
-                0 => {
+                Up => {
                     if grid[guard_y - 1][guard_x] == '#' {
-                        dir = (dir + 1) % 4;
+                        dir.turn();
                     } else {
                         guard_y -= 1
                     }
                 }
-                1 => {
+                Right => {
                     if grid[guard_y][guard_x + 1] == '#' {
-                        dir = (dir + 1) % 4;
+                        dir.turn();
                     } else {
                         guard_x += 1
                     }
                 }
-                2 => {
+                Down => {
                     if grid[guard_y + 1][guard_x] == '#' {
-                        dir = (dir + 1) % 4;
+                        dir.turn();
                     } else {
                         guard_y += 1
                     }
                 }
-                3 => {
+                Left => {
                     if grid[guard_y][guard_x - 1] == '#' {
-                        dir = (dir + 1) % 4;
+                        dir.turn();
                     } else {
                         guard_x -= 1
                     }
                 }
-                _ => unreachable!(),
             }
         }
 
