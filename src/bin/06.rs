@@ -24,7 +24,7 @@ const TEST: &str = "\
 ......#...
 ";
 
-#[derive(PartialEq, Default, Copy, Clone)]
+#[derive(PartialEq, Default, Copy, Clone, Debug)]
 enum Direction {
     #[default]
     Up,
@@ -62,7 +62,7 @@ fn move_guard(grid: &[Vec<char>], guard_x: &mut usize, guard_y: &mut usize, dir:
         Up => {
             if grid[*guard_y - 1][*guard_x] == '#' {
                 dir.turn();
-                move_guard(grid, guard_x, guard_y, dir);
+                // move_guard(grid, guard_x, guard_y, dir);
             } else {
                 *guard_y -= 1
             }
@@ -70,7 +70,7 @@ fn move_guard(grid: &[Vec<char>], guard_x: &mut usize, guard_y: &mut usize, dir:
         Right => {
             if grid[*guard_y][*guard_x + 1] == '#' {
                 dir.turn();
-                move_guard(grid, guard_x, guard_y, dir);
+                // move_guard(grid, guard_x, guard_y, dir);
             } else {
                 *guard_x += 1
             }
@@ -78,7 +78,7 @@ fn move_guard(grid: &[Vec<char>], guard_x: &mut usize, guard_y: &mut usize, dir:
         Down => {
             if grid[*guard_y + 1][*guard_x] == '#' {
                 dir.turn();
-                move_guard(grid, guard_x, guard_y, dir);
+                // move_guard(grid, guard_x, guard_y, dir);
             } else {
                 *guard_y += 1
             }
@@ -86,7 +86,7 @@ fn move_guard(grid: &[Vec<char>], guard_x: &mut usize, guard_y: &mut usize, dir:
         Left => {
             if grid[*guard_y][*guard_x - 1] == '#' {
                 dir.turn();
-                move_guard(grid, guard_x, guard_y, dir);
+                // move_guard(grid, guard_x, guard_y, dir);
             } else {
                 *guard_x -= 1
             }
@@ -102,11 +102,37 @@ fn check_loop(
     mut dir: Direction,
 ) -> bool {
     match dir {
-        Up => grid[guard_x][guard_y - 1] = '#',
-        Right => grid[guard_x + 1][guard_y] = '#',
-        Down => grid[guard_x][guard_y + 1] = '#',
-        Left => grid[guard_x - 1][guard_y] = '#',
+        Up => {
+            if grid[guard_y - 1][guard_x] == '#' {
+                return false;
+            } else {
+                grid[guard_y - 1][guard_x] = '#'
+            }
+        }
+        Right => {
+            if grid[guard_y][guard_x + 1] == '#' {
+                return false;
+            } else {
+                grid[guard_y][guard_x + 1] = '#'
+            }
+        }
+        Down => {
+            if grid[guard_y + 1][guard_x] == '#' {
+                return false;
+            } else {
+                grid[guard_y + 1][guard_x] = '#'
+            }
+        }
+        Left => {
+            if grid[guard_y][guard_x - 1] == '#' {
+                return false;
+            } else {
+                grid[guard_y][guard_x - 1] = '#'
+            }
+        }
     };
+
+    let mut steps = 0;
 
     loop {
         visited.insert((guard_x, guard_y), dir);
@@ -119,7 +145,10 @@ fn check_loop(
 
         if visited.get(&(guard_x, guard_y)) == Some(&dir) {
             return true;
+        } else if steps >= grid.len() * grid[0].len() * 4 {
+            return false;
         }
+        steps += 1;
     }
 }
 
@@ -188,7 +217,8 @@ fn main() -> Result<()> {
                 break;
             }
 
-            if check_loop(grid.clone(), visited.clone(), guard_y, guard_x, dir) {
+            if check_loop(grid.clone(), visited.clone(), guard_x, guard_y, dir) {
+                println!("Found loop by placing block at {guard_x}, {guard_y} + {dir:?}");
                 loops += 1;
             }
 
