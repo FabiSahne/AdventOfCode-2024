@@ -37,6 +37,11 @@ fn read_eq<R: BufRead, T: FromStr + Default>(reader: R) -> Vec<(T, Vec<T>)> {
         .collect::<Vec<_>>()
 }
 
+#[inline]
+fn concat(p: usize, q: usize) -> usize {
+    p * 10usize.pow((q as f64).log10().floor() as u32 + 1) + q
+}
+
 fn main() -> Result<()> {
     start_day(DAY);
 
@@ -94,8 +99,8 @@ fn main() -> Result<()> {
 
         'next: for (goal, values) in lines {
             let n = values.len();
-            let mut grid = vec![vec![vec![HashSet::new(); n]; n]; n];
-            grid[0][0][0].insert(values[0]);
+            let mut grid = vec![vec![vec![vec![]; n]; n]; n];
+            grid[0][0][0].push(values[0]);
             for i in 0..n {
                 'current: for j in 0..n {
                     for k in 0..n {
@@ -104,18 +109,17 @@ fn main() -> Result<()> {
                         }
                         if i > 0 {
                             for num in grid[i - 1][j][k].clone() {
-                                grid[i][j][k].insert(num * values[i + j + k]);
+                                grid[i][j][k].push(num * values[i + j + k]);
                             }
                         }
                         if j > 0 {
                             for num in grid[i][j - 1][k].clone() {
-                                grid[i][j][k].insert(num + values[i + j + k]);
+                                grid[i][j][k].push(num + values[i + j + k]);
                             }
                         }
                         if k > 0 {
                             for num in grid[i][j][k - 1].clone() {
-                                grid[i][j][k]
-                                    .insert(format!("{num}{}", values[i + j + k]).parse()?);
+                                grid[i][j][k].push(concat(num, values[i + j + k]));
                             }
                         }
                         if i + j + k == n - 1 && grid[i][j][k].contains(&goal) {
@@ -138,4 +142,17 @@ fn main() -> Result<()> {
     //endregion
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn concat_test() {
+        assert_eq!(12345, concat(12, 345));
+        assert_eq!(1234, concat(12, 34));
+        assert_eq!(123456, concat(123, 456));
+        assert_eq!(12, concat(1, 2));
+    }
 }
