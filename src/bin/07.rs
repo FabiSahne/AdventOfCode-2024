@@ -140,6 +140,46 @@ fn main() -> Result<()> {
     println!("Result = {result}");
     //endregion
 
+    //region Part 2 Alternative
+    println!("\n=== Part 2 === (Alternative inspred from r/adventofcode");
+
+    fn part2_alt<R: BufRead>(reader: R) -> Result<usize> {
+        let lines = read_input_to_equation::<R, usize>(reader);
+        let mut answer = 0;
+
+        'next: for (goal, values) in lines {
+            let mut last_set = vec![values[0]];
+            let n = values.len();
+            for (i, value) in values.into_iter().enumerate().skip(1) {
+                let mut mult_set = vec![];
+                let mut add_set = vec![];
+                let mut concat_set = vec![];
+                for &num in &last_set {
+                    mult_set.push(num * value);
+                    add_set.push(num + value);
+                    concat_set.push(concat(num, value));
+                }
+                last_set = mult_set
+                    .into_iter()
+                    .chain(add_set.into_iter())
+                    .chain(concat_set.into_iter())
+                    .collect();
+                if i == n - 1 && last_set.contains(&goal) {
+                    answer += goal;
+                    continue 'next;
+                }
+            }
+        }
+        Ok(answer)
+    }
+
+    assert_eq!(11387, part2_alt(BufReader::new(TEST.as_bytes()))?);
+
+    let input_file = BufReader::new(File::open(INPUT_FILE)?);
+    let result = time_snippet!(part2_alt(input_file)?);
+    println!("Result = {result}");
+    //endregion
+
     Ok(())
 }
 
