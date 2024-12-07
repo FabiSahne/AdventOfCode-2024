@@ -4,7 +4,7 @@ use anyhow::*;
 use code_timing_macros::time_snippet;
 use const_format::concatcp;
 use std::cmp::PartialEq;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -24,7 +24,7 @@ const TEST: &str = "\
 ......#...
 ";
 
-#[derive(PartialEq, Default, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Default, Copy, Clone, Debug, Hash)]
 enum Direction {
     #[default]
     Up,
@@ -94,62 +94,47 @@ fn move_guard(grid: &[Vec<char>], guard_x: &mut usize, guard_y: &mut usize, dir:
     };
 }
 
-fn check_loop(
-    mut grid: Vec<Vec<char>>,
-    mut visited: HashMap<(usize, usize), Direction>,
-    mut guard_x: usize,
-    mut guard_y: usize,
-    mut dir: Direction,
+fn simulate_with_obstacle(
+    grid: &[Vec<char>],
+    obstacle_pos: (usize, usize),
+    mut pos: (usize, usize),
+    rows: usize,
+    cols: usize,
 ) -> bool {
-    match dir {
-        Up => {
-            if grid[guard_y - 1][guard_x] == '#' {
-                return false;
-            } else {
-                grid[guard_y - 1][guard_x] = '#'
-            }
-        }
-        Right => {
-            if grid[guard_y][guard_x + 1] == '#' {
-                return false;
-            } else {
-                grid[guard_y][guard_x + 1] = '#'
-            }
-        }
-        Down => {
-            if grid[guard_y + 1][guard_x] == '#' {
-                return false;
-            } else {
-                grid[guard_y + 1][guard_x] = '#'
-            }
-        }
-        Left => {
-            if grid[guard_y][guard_x - 1] == '#' {
-                return false;
-            } else {
-                grid[guard_y][guard_x - 1] = '#'
-            }
-        }
-    };
+    let mut dir = Up;
+    let mut visited: HashSet<((usize, usize), Direction)> = HashSet::new();
+    let max_steps = rows * cols * 4;
 
     let mut steps = 0;
 
-    loop {
-        visited.insert((guard_x, guard_y), dir);
-
-        if guard_exits_grid(guard_x, guard_y, grid[0].len(), grid.len(), dir) {
-            return false;
-        }
-
-        move_guard(&grid, &mut guard_x, &mut guard_y, &mut dir);
-
-        if visited.get(&(guard_x, guard_y)) == Some(&dir) {
+    while steps < max_steps {
+        let state = (pos, dir);
+        if visited.contains(&state) {
             return true;
-        } else if steps >= grid.len() * grid[0].len() * 4 {
+        }
+        visited.insert(state);
+        let (row, col) = pos;
+        let (next_row, next_col) = match dir {
+            Up => (row.wrapping_sub(1), col),
+            Right => (row, col + 1),
+            Down => (row + 1, col),
+            Left => (row, col.wrapping_sub(1)),
+        };
+
+        if next_col >= cols || next_row >= rows {
             return false;
         }
+
+        if (next_row, next_col) == obstacle_pos || grid[next_row][next_col] == '#' {
+            dir.turn();
+        } else {
+            pos = (next_row, next_col);
+        }
+
         steps += 1;
     }
+
+    false
 }
 
 fn main() -> Result<()> {
@@ -199,33 +184,27 @@ fn main() -> Result<()> {
     fn part2<R: BufRead>(reader: R) -> Result<usize> {
         let grid = read_lines_to_vec_vec_char(reader);
         let (rows, cols) = (grid.len(), grid[0].len());
-        let mut visited = HashMap::new();
-        let mut dir = Direction::default();
 
-        let mut guard_y = (0..rows)
-            .position(|r| grid[r].contains(&'^'))
-            .expect("Definetly contains '^'");
-        let mut guard_x = (0..cols)
-            .position(|c| grid[guard_y][c] == '^')
-            .expect("Definetly contains '^'");
-
-        let mut loops = 0;
-
-        loop {
-            visited.insert((guard_x, guard_y), dir);
-            if guard_exits_grid(guard_x, guard_y, cols, rows, dir) {
-                break;
+        let mut start_pos = (0, 0);
+        let mut empty_positions = vec![];
+        for (i, row) in grid.iter().enumerate() {
+            for (j, &c) in row.iter().enumerate() {
+                if c == '^' {
+                    start_pos = (i, j);
+                } else if c == '.' {
+                    empty_positions.push((i, j));
+                }
             }
-
-            if check_loop(grid.clone(), visited.clone(), guard_x, guard_y, dir) {
-                println!("Found loop by placing block at {guard_x}, {guard_y} + {dir:?}");
-                loops += 1;
-            }
-
-            move_guard(&grid, &mut guard_x, &mut guard_y, &mut dir);
         }
 
-        Ok(loops)
+        let mut valid_positions = vec![];
+        for pos in empty_positions {
+            if simulate_with_obstacle(&grid, pos, start_pos, rows, cols) {
+                valid_positions.push(pos);
+            }
+        }
+
+        Ok(valid_positions.len())
     }
 
     assert_eq!(6, part2(BufReader::new(TEST.as_bytes()))?);
