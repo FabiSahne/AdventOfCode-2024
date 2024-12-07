@@ -103,7 +103,7 @@ fn main() -> Result<()> {
             for i in 0..n {
                 'current: for j in 0..n {
                     for k in 0..n {
-                        if i + j + k == n {
+                        if i + j + k >= n {
                             continue 'current;
                         }
                         if i > 0 {
