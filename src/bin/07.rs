@@ -2,7 +2,6 @@ use adv_code_2024::*;
 use anyhow::*;
 use code_timing_macros::time_snippet;
 use const_format::concatcp;
-use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
@@ -22,7 +21,7 @@ const TEST: &str = "\
 292: 11 6 16 20
 ";
 
-fn read_eq<R: BufRead, T: FromStr + Default>(reader: R) -> Vec<(T, Vec<T>)> {
+fn read_input_to_equation<R: BufRead, T: FromStr + Default>(reader: R) -> Vec<(T, Vec<T>)> {
     reader
         .lines()
         .map(|l| {
@@ -49,13 +48,13 @@ fn main() -> Result<()> {
     println!("=== Part 1 ===");
 
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
-        let lines = read_eq::<R, usize>(reader);
+        let lines = read_input_to_equation::<R, usize>(reader);
         let mut answer = 0;
 
         'next: for (goal, values) in lines {
             let n = values.len();
-            let mut grid = vec![vec![HashSet::new(); n]; n];
-            grid[0][0].insert(values[0]);
+            let mut grid = vec![vec![vec![]; n]; n];
+            grid[0][0].push(values[0]);
             'current: for i in 0..n {
                 for j in 0..n {
                     if i + j == n {
@@ -63,12 +62,12 @@ fn main() -> Result<()> {
                     }
                     if i > 0 {
                         for num in grid[i - 1][j].clone() {
-                            grid[i][j].insert(num * values[i + j]);
+                            grid[i][j].push(num * values[i + j]);
                         }
                     }
                     if j > 0 {
                         for num in grid[i][j - 1].clone() {
-                            grid[i][j].insert(num + values[i + j]);
+                            grid[i][j].push(num + values[i + j]);
                         }
                     }
                     if i + j == n - 1 && grid[i][j].contains(&goal) {
@@ -93,7 +92,7 @@ fn main() -> Result<()> {
     println!("\n=== Part 2 ===");
 
     fn part2<R: BufRead>(reader: R) -> Result<usize> {
-        let lines = read_eq::<R, usize>(reader);
+        let lines = read_input_to_equation::<R, usize>(reader);
 
         let mut answer = 0;
 
