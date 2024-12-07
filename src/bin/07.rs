@@ -39,7 +39,7 @@ fn read_eq<R: BufRead, T: FromStr + Default>(reader: R) -> Vec<(T, Vec<T>)> {
 
 #[inline]
 fn concat(p: usize, q: usize) -> usize {
-    p * 10usize.pow((q as f64).log10().floor() as u32 + 1) + q
+    p * 10usize.pow(q.ilog10() + 1) + q
 }
 
 fn main() -> Result<()> {
