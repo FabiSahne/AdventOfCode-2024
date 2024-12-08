@@ -105,7 +105,6 @@ fn main() -> Result<()> {
         let node_map = get_map(&data);
 
         let (x, y) = (data[0].len(), data.len());
-        let mut answer = 0;
 
         for (_, coords) in node_map {
             for pair in coords.iter().combinations(2) {
@@ -113,15 +112,15 @@ fn main() -> Result<()> {
                 let node2 = *pair[1];
 
                 for antinode in get_antinodes_part1(node1, node2, x, y) {
-                    if data[antinode.1][antinode.0] != '#' {
-                        answer += 1;
-                        data[antinode.1][antinode.0] = '#';
-                    }
+                    data[antinode.1][antinode.0] = '#';
                 }
             }
         }
 
-        Ok(answer)
+        Ok(data
+            .into_iter()
+            .map(|row| row.into_iter().filter(|&ch| ch == '#').count())
+            .sum())
     }
 
     assert_eq!(14, part1(BufReader::new(TEST.as_bytes()))?);
