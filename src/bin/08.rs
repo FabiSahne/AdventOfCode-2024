@@ -25,10 +25,10 @@ const TEST: &str = "\
 ............
 ";
 
-fn is_valid_antinode(node: (i32, i32), max_x: usize, max_y: usize) -> bool {
+fn grid_contains_antinode(node: (i32, i32), max_x: usize, max_y: usize) -> bool {
     node.0 >= 0 && node.1 >= 0 && (node.0 as usize) < max_x && (node.1 as usize) < max_y
 }
-fn get_antinodes(
+fn get_antinodes_part1(
     node1: (usize, usize),
     node2: (usize, usize),
     max_x: usize,
@@ -45,10 +45,10 @@ fn get_antinodes(
     let antinode1 = (node1_x - x_diff, node1_y - y_diff);
     let antinode2 = (node2_x + x_diff, node2_y + y_diff);
 
-    if is_valid_antinode(antinode1, max_x, max_y) {
+    if grid_contains_antinode(antinode1, max_x, max_y) {
         nodes.push((antinode1.0 as usize, antinode1.1 as usize));
     }
-    if is_valid_antinode(antinode2, max_x, max_y) {
+    if grid_contains_antinode(antinode2, max_x, max_y) {
         nodes.push((antinode2.0 as usize, antinode2.1 as usize));
     }
     nodes
@@ -71,11 +71,11 @@ fn get_antinodes_part2(
     let mut antinode1 = (node1_x - x_diff, node1_y - y_diff);
     let mut antinode2 = (node2_x + x_diff, node2_y + y_diff);
 
-    while is_valid_antinode(antinode1, max_x, max_y) {
+    while grid_contains_antinode(antinode1, max_x, max_y) {
         nodes.push((antinode1.0 as usize, antinode1.1 as usize));
         antinode1 = (antinode1.0 - x_diff, antinode1.1 - y_diff);
     }
-    while is_valid_antinode(antinode2, max_x, max_y) {
+    while grid_contains_antinode(antinode2, max_x, max_y) {
         nodes.push((antinode2.0 as usize, antinode2.1 as usize));
         antinode2 = (antinode2.0 + x_diff, antinode2.1 + y_diff);
     }
@@ -112,7 +112,7 @@ fn main() -> Result<()> {
                 let node1 = *pair[0];
                 let node2 = *pair[1];
 
-                for antinode in get_antinodes(node1, node2, x, y) {
+                for antinode in get_antinodes_part1(node1, node2, x, y) {
                     if data[antinode.1][antinode.0] != '#' {
                         answer += 1;
                         data[antinode.1][antinode.0] = '#';
