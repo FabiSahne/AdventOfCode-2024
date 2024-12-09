@@ -13,10 +13,29 @@ const INPUT_FILE: &str = concatcp!("input/", DAY, ".txt");
 const TEST: &str = "2333133121414131402";
 
 fn calculate_checksum(disk: &[Option<usize>]) -> usize {
-    disk.iter()
-        .map_while(|x| x.as_ref())
-        .enumerate()
-        .fold(0, |acc, (idx, v)| acc + (v * idx))
+    disk.iter().enumerate().fold(0, |acc, (idx, v)| match v {
+        Some(val) => acc + (idx * val),
+        None => acc,
+    })
+}
+
+fn disk_from_map<R: BufRead>(reader: R) -> Vec<Option<usize>> {
+    let disk_map = reader
+        .bytes()
+        .map_while(Result::ok)
+        .map(|b| char::from(b).to_digit(10).unwrap() as usize)
+        .collect::<Vec<_>>();
+
+    let mut disk = vec![];
+    for (id, chunk) in disk_map.chunks(2).enumerate() {
+        let file = chunk[0];
+        disk.append(&mut vec![Some(id); file]);
+        if chunk.len() > 1 {
+            let free = chunk[1];
+            disk.append(&mut vec![None; free]);
+        }
+    }
+    disk
 }
 
 fn main() -> Result<()> {
@@ -26,21 +45,7 @@ fn main() -> Result<()> {
     println!("=== Part 1 ===");
 
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
-        let disk_map = reader
-            .bytes()
-            .map_while(Result::ok)
-            .map(|b| char::from(b).to_digit(10).unwrap() as usize)
-            .collect::<Vec<_>>();
-
-        let mut disk = vec![];
-        for (id, chunk) in disk_map.chunks(2).enumerate() {
-            let file = chunk[0];
-            disk.append(&mut vec![Some(id); file]);
-            if chunk.len() > 1 {
-                let free = chunk[1];
-                disk.append(&mut vec![None; free]);
-            }
-        }
+        let mut disk = disk_from_map(reader);
 
         let mut left = disk.iter().position(|x| x.is_none()).unwrap();
         let mut right = disk.iter().rposition(|x| x.is_some()).unwrap();
@@ -68,17 +73,32 @@ fn main() -> Result<()> {
     //endregion
 
     //region Part 2
-    // println!("\n=== Part 2 ===");
-    //
-    // fn part2<R: BufRead>(reader: R) -> Result<usize> {
-    //     Ok(0)
-    // }
-    //
-    // assert_eq!(0, part2(BufReader::new(TEST.as_bytes()))?);
-    //
-    // let input_file = BufReader::new(File::open(INPUT_FILE)?);
-    // let result = time_snippet!(part2(input_file)?);
-    // println!("Result = {result}");
+    println!("\n=== Part 2 ===");
+
+    fn part2<R: BufRead>(reader: R) -> Result<usize> {
+        let disk = disk_from_map(reader);
+
+        let right_edge = disk.iter().rposition(|x| x.is_some()).unwrap();
+        loop {
+            let mut left_edge = right_edge;
+            while left_edge > 0 && disk[left_edge] == disk[right_edge] {
+                left_edge -= 1;
+            }
+            left_edge += 1;
+            let size = right_edge - left_edge + 1;
+
+            let left_free = disk.iter().position(|x| x.is_none()).unwrap();
+            let right_free = left_free;
+        }
+
+        Ok(0)
+    }
+
+    assert_eq!(2858, part2(BufReader::new(TEST.as_bytes()))?);
+
+    let input_file = BufReader::new(File::open(INPUT_FILE)?);
+    let result = time_snippet!(part2(input_file)?);
+    println!("Result = {result}");
     //endregion
 
     Ok(())
