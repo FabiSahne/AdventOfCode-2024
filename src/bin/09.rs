@@ -3,7 +3,6 @@ use anyhow::*;
 use code_timing_macros::time_snippet;
 use const_format::concatcp;
 use std::char;
-// use std::fmt::Write;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -19,23 +18,26 @@ fn calculate_checksum(disk: &[Option<usize>]) -> usize {
     })
 }
 
-fn disk_from_map<R: BufRead>(reader: R) -> Vec<Option<usize>> {
-    let disk_map = reader
+fn read_disk_map<R: BufRead>(reader: R) -> Vec<usize> {
+    reader
         .bytes()
         .map_while(Result::ok)
         .map(|b| char::from(b).to_digit(10).unwrap() as usize)
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>()
+}
 
-    let mut disk = vec![];
-    for (id, chunk) in disk_map.chunks(2).enumerate() {
-        let file = chunk[0];
-        disk.append(&mut vec![Some(id); file]);
-        if chunk.len() > 1 {
-            let free = chunk[1];
-            disk.append(&mut vec![None; free]);
-        }
-    }
-    disk
+fn disk_from_map(map: &[usize]) -> Vec<Option<usize>> {
+    map.chunks(2)
+        .enumerate()
+        .fold(vec![], |mut acc, (id, chunk)| {
+            let file = chunk[0];
+            acc.append(&mut vec![Some(id); file]);
+            if chunk.len() > 1 {
+                let free = chunk[1];
+                acc.append(&mut vec![None; free]);
+            }
+            acc
+        })
 }
 
 fn main() -> Result<()> {
@@ -45,7 +47,8 @@ fn main() -> Result<()> {
     println!("=== Part 1 ===");
 
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
-        let mut disk = disk_from_map(reader);
+        let map = read_disk_map(reader);
+        let mut disk = disk_from_map(&map);
 
         let mut left = disk.iter().position(|x| x.is_none()).unwrap();
         let mut right = disk.iter().rposition(|x| x.is_some()).unwrap();
@@ -76,19 +79,36 @@ fn main() -> Result<()> {
     println!("\n=== Part 2 ===");
 
     fn part2<R: BufRead>(reader: R) -> Result<usize> {
-        let disk = disk_from_map(reader);
+        let disk_map = read_disk_map(reader);
 
-        let right_edge = disk.iter().rposition(|x| x.is_some()).unwrap();
+        let mut disk = disk_map
+            .chunks(2)
+            .enumerate()
+            .fold(vec![], |mut acc, (id, chunk)| {
+                let file = chunk[0];
+                acc.push((Some(id), file));
+                if chunk.len() > 1 {
+                    let free = chunk[1];
+                    acc.push((None, free));
+                }
+                acc
+            });
+
+        let mut right_most_file = disk.iter().rposition(|x| x.0.is_some()).unwrap();
         loop {
-            let mut left_edge = right_edge;
-            while left_edge > 0 && disk[left_edge] == disk[right_edge] {
-                left_edge -= 1;
+            let mut left_most_free = disk.iter().position(|x| x.0.is_none()).unwrap();
+            while left_most_free < disk.len() && disk[left_most_free].1 < disk[right_most_file].1 {
+                left_most_free += 1;
+                while disk[left_most_free].0.is_none() {
+                    left_most_free += 1;
+                }
             }
-            left_edge += 1;
-            let size = right_edge - left_edge + 1;
-
-            let left_free = disk.iter().position(|x| x.is_none()).unwrap();
-            let right_free = left_free;
+            if disk[left_most_free].1 >= disk[right_most_file].1 {
+                let diff = disk[left_most_free].1 - disk[right_most_file].1;
+                disk[left_most_free] = disk[right_most_file];
+                disk.insert(left_most_free + 1, (None, disk[left_most_free].1 - diff));
+                disk[right_most_file + 1] = (None, disk[right_most_file + 1].1);
+            }
         }
 
         Ok(0)
