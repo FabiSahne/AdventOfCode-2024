@@ -81,8 +81,6 @@ fn main() -> Result<()> {
                         .and_modify(|x| *x += count)
                         .or_insert(count);
                 } else if (stone.ilog10() + 1) % 2 == 0 {
-                    // new_stones.push(stone / 10usize.pow((stone.ilog10() + 1) / 2));
-                    // new_stones.push(stone % 10usize.pow((stone.ilog10() + 1) / 2));
                     freq_count
                         .entry(stone / 10usize.pow((stone.ilog10() + 1) / 2))
                         .and_modify(|x| *x += count)
@@ -102,8 +100,6 @@ fn main() -> Result<()> {
 
         Ok(freq_count.values().sum())
     }
-
-    //assert_eq!(0, part2(BufReader::new(TEST.as_bytes()))?);
 
     let input_file = BufReader::new(File::open(INPUT_FILE)?);
     let result = time_snippet!(part2(input_file)?);
