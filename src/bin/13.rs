@@ -29,16 +29,23 @@ Prize: X=18641, Y=10279
 
 const CONVERSION: isize = 10_000_000_000_000;
 
-type Button = (usize, usize);
-type Prize = (usize, usize);
-type Machine = (Button, Button, Prize);
+#[derive(Default)]
+struct IVec2 {
+    x: isize,
+    y: isize,
+}
+struct Machine {
+    a: IVec2,
+    b: IVec2,
+    p: IVec2,
+}
 fn read_input<R: BufRead>(reader: R) -> Result<Vec<Machine>> {
     let mut output: Vec<Machine> = Vec::new();
     let machines = reader.lines().chunks(4);
     for machine in machines.into_iter() {
-        let mut button_a: Button = (0, 0);
-        let mut button_b: Button = (0, 0);
-        let mut prize: Prize = (0, 0);
+        let mut button_a = IVec2::default();
+        let mut button_b = IVec2::default();
+        let mut prize = IVec2::default();
         for line in machine {
             let line = line?;
             if line.starts_with("Button") {
@@ -47,12 +54,18 @@ fn read_input<R: BufRead>(reader: R) -> Result<Vec<Machine>> {
                     .nth(1)
                     .unwrap()
                     .split(',')
-                    .map(|x| x.split('+').nth(1).unwrap().parse::<usize>().unwrap())
+                    .map(|x| x.split('+').nth(1).unwrap().parse::<isize>().unwrap())
                     .collect_vec();
                 if line.starts_with("Button A") {
-                    button_a = (coords[0], coords[1]);
+                    button_a = IVec2 {
+                        x: coords[0],
+                        y: coords[1],
+                    };
                 } else if line.starts_with("Button B") {
-                    button_b = (coords[0], coords[1]);
+                    button_b = IVec2 {
+                        x: coords[0],
+                        y: coords[1],
+                    };
                 }
             } else if line.starts_with("Prize") {
                 let coords = line
@@ -60,42 +73,43 @@ fn read_input<R: BufRead>(reader: R) -> Result<Vec<Machine>> {
                     .nth(1)
                     .unwrap()
                     .split(',')
-                    .map(|x| x.split('=').nth(1).unwrap().parse::<usize>().unwrap())
+                    .map(|x| x.split('=').nth(1).unwrap().parse::<isize>().unwrap())
                     .collect_vec();
-                prize = (coords[0], coords[1]);
+                prize = IVec2 {
+                    x: coords[0],
+                    y: coords[1],
+                };
             }
         }
-        output.push((button_a, button_b, prize));
+        output.push(Machine {
+            a: button_a,
+            b: button_b,
+            p: prize,
+        });
     }
     Ok(output)
 }
 
 fn solve_machine(machine: Machine, offset: isize) -> isize {
-    let (ax, ay, bx, by, px, py) = (
-        machine.0 .0 as isize,
-        machine.0 .1 as isize,
-        machine.1 .0 as isize,
-        machine.1 .1 as isize,
-        machine.2 .0 as isize + offset,
-        machine.2 .1 as isize + offset,
-    );
-    let det = ax * by - ay * bx;
+    let prize = IVec2 {
+        x: machine.p.x + offset,
+        y: machine.p.y + offset,
+    };
+    let det = machine.a.x * machine.b.y - machine.a.y * machine.b.x;
     if det == 0 {
-        0
+        return 0;
+    }
+    let mut a = prize.x * machine.b.y - prize.y * machine.b.x;
+    let mut b = prize.y * machine.a.x - prize.x * machine.a.y;
+    if a % det != 0 || b % det != 0 {
+        return 0;
+    }
+    a /= det;
+    b /= det;
+    if !(a.is_negative() || b.is_negative()) {
+        a * 3 + b
     } else {
-        let mut a = px * by - py * bx;
-        let mut b = py * ax - px * ay;
-        if a % det != 0 || b % det != 0 {
-            0
-        } else {
-            a /= det;
-            b /= det;
-            if !(a.is_negative() || b.is_negative()) {
-                a * 3 + b
-            } else {
-                0
-            }
-        }
+        0
     }
 }
 
