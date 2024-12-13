@@ -27,6 +27,8 @@ Button B: X+27, Y+71
 Prize: X=18641, Y=10279
 ";
 
+const CONVERSION: isize = 10_000_000_000_000;
+
 type Button = (usize, usize);
 type Prize = (usize, usize);
 type Machine = (Button, Button, Prize);
@@ -68,43 +70,47 @@ fn read_input<R: BufRead>(reader: R) -> Result<Vec<Machine>> {
     Ok(output)
 }
 
+fn solve_machine(machine: Machine, offset: isize) -> isize {
+    let (ax, ay, bx, by, px, py) = (
+        machine.0 .0 as isize,
+        machine.0 .1 as isize,
+        machine.1 .0 as isize,
+        machine.1 .1 as isize,
+        machine.2 .0 as isize + offset,
+        machine.2 .1 as isize + offset,
+    );
+    let det = ax * by - ay * bx;
+    if det == 0 {
+        0
+    } else {
+        let mut a = px * by - py * bx;
+        let mut b = py * ax - px * ay;
+        if a % det != 0 || b % det != 0 {
+            0
+        } else {
+            a /= det;
+            b /= det;
+            if !(a.is_negative() || b.is_negative()) {
+                a * 3 + b
+            } else {
+                0
+            }
+        }
+    }
+}
+
 fn main() -> Result<()> {
     start_day(DAY);
 
     //region Part 1
     println!("=== Part 1 ===");
 
-    fn part1<R: BufRead>(reader: R) -> Result<usize> {
+    fn part1<R: BufRead>(reader: R) -> Result<isize> {
         let machines = read_input(reader)?;
-        let mut answer = 0;
-        for machine in machines {
-            let mut grid = vec![vec![(0, 0, 0); 101]; 101]; // [[(X, Y, TokenCost)]]
-            for y in 0..=100 {
-                for x in 0..=100 {
-                    if x > 0 && y == 0 {
-                        grid[y][x] = (
-                            grid[y][x - 1].0 + machine.0 .0,
-                            grid[y][x - 1].1 + machine.0 .1,
-                            grid[y][x - 1].2 + 3,
-                        );
-                    } else if y > 0 {
-                        grid[y][x] = (
-                            grid[y - 1][x].0 + machine.1 .0,
-                            grid[y - 1][x].1 + machine.1 .1,
-                            grid[y - 1][x].2 + 1,
-                        );
-                    }
-                }
-            }
-            let flat_grid = grid
-                .iter()
-                .flatten()
-                .sorted_unstable_by_key(|x| x.2)
-                .collect_vec();
-            if let Some(goal) = flat_grid.iter().position(|x| (x.0, x.1) == machine.2) {
-                answer += flat_grid[goal].2;
-            }
-        }
+        let answer = machines
+            .into_iter()
+            .map(|machine| solve_machine(machine, 0))
+            .sum::<isize>();
         Ok(answer)
     }
 
@@ -116,17 +122,20 @@ fn main() -> Result<()> {
     //endregion
 
     //region Part 2
-    // println!("\n=== Part 2 ===");
-    //
-    // fn part2<R: BufRead>(reader: R) -> Result<usize> {
-    //     Ok(0)
-    // }
-    //
-    // assert_eq!(0, part2(BufReader::new(TEST.as_bytes()))?);
-    //
-    // let input_file = BufReader::new(File::open(INPUT_FILE)?);
-    // let result = time_snippet!(part2(input_file)?);
-    // println!("Result = {result}");
+    println!("\n=== Part 2 ===");
+
+    fn part2<R: BufRead>(reader: R) -> Result<isize> {
+        let machines = read_input(reader)?;
+        let answer = machines
+            .into_iter()
+            .map(|machine| solve_machine(machine, CONVERSION))
+            .sum::<isize>();
+        Ok(answer)
+    }
+
+    let input_file = BufReader::new(File::open(INPUT_FILE)?);
+    let result = time_snippet!(part2(input_file)?);
+    println!("Result = {result}");
     //endregion
 
     Ok(())
