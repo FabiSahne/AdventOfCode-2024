@@ -75,6 +75,21 @@ pub fn read_lines_to_vec_vec_char<R: BufRead>(reader: R) -> Vec<Vec<char>> {
         .collect::<Vec<Vec<char>>>()
 }
 
+#[derive(Default, Copy, Clone)]
+pub struct Vec2<T> {
+    pub x: T,
+    pub y: T,
+}
+
+impl<T> From<(T, T)> for Vec2<T> {
+    fn from(tuple: (T, T)) -> Self {
+        Vec2 {
+            x: tuple.0,
+            y: tuple.1,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

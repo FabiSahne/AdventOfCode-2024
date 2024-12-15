@@ -29,23 +29,18 @@ Prize: X=18641, Y=10279
 
 const CONVERSION: isize = 10_000_000_000_000;
 
-#[derive(Default)]
-struct IVec2 {
-    x: isize,
-    y: isize,
-}
 struct Machine {
-    a: IVec2,
-    b: IVec2,
-    p: IVec2,
+    a: Vec2<isize>,
+    b: Vec2<isize>,
+    p: Vec2<isize>,
 }
 fn read_input<R: BufRead>(reader: R) -> Result<Vec<Machine>> {
     let mut output: Vec<Machine> = Vec::new();
     let machines = reader.lines().chunks(4);
     for machine in machines.into_iter() {
-        let mut button_a = IVec2::default();
-        let mut button_b = IVec2::default();
-        let mut prize = IVec2::default();
+        let mut button_a = Vec2::default();
+        let mut button_b = Vec2::default();
+        let mut prize = Vec2::default();
         for line in machine {
             let line = line?;
             if line.starts_with("Button") {
@@ -57,12 +52,12 @@ fn read_input<R: BufRead>(reader: R) -> Result<Vec<Machine>> {
                     .map(|x| x.split('+').nth(1).unwrap().parse::<isize>().unwrap())
                     .collect_vec();
                 if line.starts_with("Button A") {
-                    button_a = IVec2 {
+                    button_a = Vec2 {
                         x: coords[0],
                         y: coords[1],
                     };
                 } else if line.starts_with("Button B") {
-                    button_b = IVec2 {
+                    button_b = Vec2 {
                         x: coords[0],
                         y: coords[1],
                     };
@@ -75,7 +70,7 @@ fn read_input<R: BufRead>(reader: R) -> Result<Vec<Machine>> {
                     .split(',')
                     .map(|x| x.split('=').nth(1).unwrap().parse::<isize>().unwrap())
                     .collect_vec();
-                prize = IVec2 {
+                prize = Vec2 {
                     x: coords[0],
                     y: coords[1],
                 };
@@ -91,7 +86,7 @@ fn read_input<R: BufRead>(reader: R) -> Result<Vec<Machine>> {
 }
 
 fn solve_machine(machine: Machine, offset: isize) -> isize {
-    let prize = IVec2 {
+    let prize = Vec2 {
         x: machine.p.x + offset,
         y: machine.p.y + offset,
     };
