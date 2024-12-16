@@ -94,7 +94,7 @@ fn main() -> Result<()> {
                 acc
             });
 
-        let mut right_most_file = disk.iter().rposition(|x| x.0.is_some()).unwrap();
+        let right_most_file = disk.iter().rposition(|x| x.0.is_some()).unwrap();
         loop {
             let mut left_most_free = disk.iter().position(|x| x.0.is_none()).unwrap();
             while left_most_free < disk.len() && disk[left_most_free].1 < disk[right_most_file].1 {
@@ -110,8 +110,6 @@ fn main() -> Result<()> {
                 disk[right_most_file + 1] = (None, disk[right_most_file + 1].1);
             }
         }
-
-        Ok(0)
     }
 
     assert_eq!(2858, part2(BufReader::new(TEST.as_bytes()))?);
