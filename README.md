@@ -23,7 +23,7 @@ Average over five runs:
 | **15** | 450μs  |                                         |
 | **16** |        |                                         |
 | **17** | 442μs  | _Hours, Days, Months, Years; Who knows_ |
-| **18** |        |                                         |
+| **18** | 8.82ms |                                         |
 | **19** |        |                                         |
 | **20** |        |                                         |
 | **21** |        |                                         |

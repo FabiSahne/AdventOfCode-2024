@@ -29,6 +29,8 @@ Register C: 0
 Program: 0,3,5,4,3,0
 ";
 
+const THREADS: usize = 16;
+
 macro_rules! combo {
     ($operand:expr, $reg_a:expr, $reg_b:expr, $reg_c:expr) => {
         match $operand {
@@ -101,13 +103,11 @@ fn main() -> Result<()> {
         let program = pro_reg
             .captures(&text)
             .map(|caps| {
-                let mut pro = vec![];
-                for c in caps["p"].chars() {
-                    if c.is_ascii_digit() {
-                        pro.push((c as u8 - b'0') as usize)
-                    }
-                }
-                pro
+                caps["p"]
+                    .chars()
+                    .filter(|c| c.is_ascii_digit())
+                    .map(|c| (c as u8 - b'0') as usize)
+                    .collect_vec()
             })
             .unwrap();
 
@@ -170,10 +170,10 @@ fn main() -> Result<()> {
 
         let mut handles = vec![];
 
-        for t in 0..16 {
+        for thrd in 0..THREADS {
             let arc = program.clone();
             handles.push(thread::spawn(move || {
-                for a in (t..).step_by(16) {
+                for a in (thrd..).step_by(THREADS) {
                     let new_program = format!(
                         "Register A: {}\nRegister B: {}\nRegister C: {}\nProgram: {}\n",
                         a, reg_b, reg_c, arc

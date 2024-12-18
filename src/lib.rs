@@ -173,6 +173,14 @@ where
     }
 }
 
+#[allow(dead_code)]
+pub fn print_map(map: &[Vec<char>]) {
+    for row in map {
+        println!("{}", row.iter().collect::<String>());
+    }
+    println!();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

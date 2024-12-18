@@ -120,14 +120,6 @@ fn sum_of_gps_coords(map: Vec<Vec<char>>) -> usize {
     sum
 }
 
-#[allow(dead_code)]
-fn print_map(map: &[Vec<char>]) {
-    for row in map {
-        println!("{}", row.iter().collect::<String>());
-    }
-    println!();
-}
-
 fn main() -> Result<()> {
     start_day(DAY);
 
