@@ -39,6 +39,22 @@ const TEST: &str = "\
 2,0
 ";
 
+macro_rules! succsessors {
+    ($mem:ident, $size:ident) => {
+        |(x, y)| {
+            vec![
+                ((x + 1, *y), 1),
+                ((*x, y + 1), 1),
+                ((x.wrapping_sub(&1), *y), 1),
+                ((*x, y.wrapping_sub(&1)), 1),
+            ]
+            .into_iter()
+            .filter(|((x, y), _)| *x < $size && *y < $size && $mem[*y][*x] != '#')
+            .collect_vec()
+        }
+    };
+}
+
 fn main() -> Result<()> {
     start_day(DAY);
 
@@ -63,21 +79,9 @@ fn main() -> Result<()> {
 
         //print_map(&mem);
 
-        let (_, pathlen) = dijkstra(
-            &(0usize, 0usize),
-            |(x, y)| {
-                vec![
-                    ((x + 1, *y), 1),
-                    ((*x, y + 1), 1),
-                    ((x.wrapping_sub(&1), *y), 1),
-                    ((*x, y.wrapping_sub(&1)), 1),
-                ]
-                .into_iter()
-                .filter(|((x, y), _)| *x < size && *y < size && mem[*y][*x] != '#')
-                .collect_vec()
-            },
-            |n| n == &(size - 1, size - 1),
-        )
+        let (_, pathlen) = dijkstra(&(0usize, 0usize), succsessors!(mem, size), |n| {
+            n == &(size - 1, size - 1)
+        })
         .expect("No Path found");
 
         Ok(pathlen)
@@ -105,17 +109,7 @@ fn main() -> Result<()> {
             mem[y][x] = '#';
             if astar(
                 &(0usize, 0usize),
-                |(x, y)| {
-                    vec![
-                        ((x + 1, *y), 1),
-                        ((*x, y + 1), 1),
-                        ((x.wrapping_sub(&1), *y), 1),
-                        ((*x, y.wrapping_sub(&1)), 1),
-                    ]
-                    .into_iter()
-                    .filter(|((x, y), _)| *x < size && *y < size && mem[*y][*x] != '#')
-                    .collect_vec()
-                },
+                succsessors!(mem, size),
                 |(x, y)| (size - 1 - x) + (size - 1 - y),
                 |n| n == &(size - 1, size - 1),
             )
