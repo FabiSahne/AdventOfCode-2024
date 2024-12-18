@@ -4,7 +4,7 @@ use code_timing_macros::time_snippet;
 use const_format::concatcp;
 use itertools::Itertools;
 use pathfinding::num_traits::WrappingSub;
-use pathfinding::prelude::dijkstra;
+use pathfinding::prelude::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -91,17 +91,47 @@ fn main() -> Result<()> {
     //endregion
 
     //region Part 2
-    // println!("\n=== Part 2 ===");
-    //
-    // fn part2<R: BufRead>(reader: R) -> Result<usize> {
-    //     Ok(0)
-    // }
-    //
-    // assert_eq!(0, part2(BufReader::new(TEST.as_bytes()))?);
-    //
-    // let input_file = BufReader::new(File::open(INPUT_FILE)?);
-    // let result = time_snippet!(part2(input_file)?);
-    // println!("Result = {result}");
+    println!("\n=== Part 2 ===");
+
+    fn part2<R: BufRead>(reader: R, size: usize) -> Result<(usize, usize)> {
+        let mut mem = vec![vec!['.'; size]; size];
+
+        for line in reader.lines() {
+            let (x, y) = line?
+                .split(',')
+                .map(|d| d.parse::<usize>().unwrap())
+                .next_tuple()
+                .unwrap();
+            mem[y][x] = '#';
+            if astar(
+                &(0usize, 0usize),
+                |(x, y)| {
+                    vec![
+                        ((x + 1, *y), 1),
+                        ((*x, y + 1), 1),
+                        ((x.wrapping_sub(&1), *y), 1),
+                        ((*x, y.wrapping_sub(&1)), 1),
+                    ]
+                    .into_iter()
+                    .filter(|((x, y), _)| *x < size && *y < size && mem[*y][*x] != '#')
+                    .collect_vec()
+                },
+                |(x, y)| (size - 1 - x) + (size - 1 - y),
+                |n| n == &(size - 1, size - 1),
+            )
+            .is_none()
+            {
+                return Ok((x, y));
+            }
+        }
+        Err(Error::msg("No Broken Path"))
+    }
+
+    assert_eq!((6, 1), part2(BufReader::new(TEST.as_bytes()), 7)?);
+
+    let input_file = BufReader::new(File::open(INPUT_FILE)?);
+    let result = time_snippet!(part2(input_file, 71)?);
+    println!("Result = {},{}", result.0, result.1);
     //endregion
 
     Ok(())
