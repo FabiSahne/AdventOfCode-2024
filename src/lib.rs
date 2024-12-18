@@ -1,3 +1,4 @@
+use crate::Direction::*;
 use std::io::BufRead;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
@@ -84,46 +85,34 @@ pub enum Direction {
     West,
 }
 
+macro_rules! __turn {
+    ($__rhs:ident, $dir_left:ident, $dir_straight:ident, $dir_right:ident) => {
+        if $__rhs == 0 {
+            $dir_straight
+        } else if $__rhs.is_negative() {
+            $dir_left + ($__rhs + 1)
+        } else {
+            $dir_right + ($__rhs - 1)
+        }
+    };
+}
+
 impl Add<i8> for Direction {
     type Output = Direction;
 
     fn add(self, rhs: i8) -> Self::Output {
         match self {
-            Direction::North => {
-                if rhs == 1 {
-                    Direction::East
-                } else if rhs == -1 {
-                    Direction::West
-                } else {
-                    self
-                }
+            North => {
+                __turn!(rhs, West, North, East)
             }
-            Direction::East => {
-                if rhs == 1 {
-                    Direction::South
-                } else if rhs == -1 {
-                    Direction::North
-                } else {
-                    self
-                }
+            East => {
+                __turn!(rhs, North, East, South)
             }
-            Direction::South => {
-                if rhs == 1 {
-                    Direction::West
-                } else if rhs == -1 {
-                    Direction::East
-                } else {
-                    self
-                }
+            South => {
+                __turn!(rhs, East, South, West)
             }
-            Direction::West => {
-                if rhs == 1 {
-                    Direction::North
-                } else if rhs == -1 {
-                    Direction::South
-                } else {
-                    self
-                }
+            West => {
+                __turn!(rhs, South, West, North)
             }
         }
     }
@@ -153,19 +142,19 @@ where
     fn add(self, rhs: Direction) -> Self::Output {
         let one: T = 1u8.into();
         match rhs {
-            Direction::North => Vec2 {
+            North => Vec2 {
                 x: self.x,
                 y: self.y - one,
             },
-            Direction::East => Vec2 {
+            East => Vec2 {
                 x: self.x + one,
                 y: self.y,
             },
-            Direction::South => Vec2 {
+            South => Vec2 {
                 x: self.x,
                 y: self.y + one,
             },
-            Direction::West => Vec2 {
+            West => Vec2 {
                 x: self.x - one,
                 y: self.y,
             },
@@ -174,7 +163,7 @@ where
 }
 
 #[allow(dead_code)]
-pub fn print_map(map: &[Vec<char>]) {
+pub fn print_vec_vec_char(map: &[Vec<char>]) {
     for row in map {
         println!("{}", row.iter().collect::<String>());
     }
