@@ -100,6 +100,9 @@ fn main() -> Result<()> {
     fn part2<R: BufRead>(reader: R, size: usize) -> Result<(usize, usize)> {
         let mut mem = vec![vec!['.'; size]; size];
 
+        let mut path = (0..size).map(|i| (0, i)).collect_vec();
+        path.append(&mut (0..size).map(|i| (i, size - 1)).collect_vec());
+
         for line in reader.lines() {
             let (x, y) = line?
                 .split(',')
@@ -107,15 +110,21 @@ fn main() -> Result<()> {
                 .next_tuple()
                 .unwrap();
             mem[y][x] = '#';
-            if astar(
-                &(0usize, 0usize),
-                succsessors!(mem, size),
-                |(x, y)| (size - 1 - x) + (size - 1 - y),
-                |n| n == &(size - 1, size - 1),
-            )
-            .is_none()
-            {
-                return Ok((x, y));
+
+            // print_map(&mem);
+
+            if path.contains(&(x, y)) {
+                let astar_result = astar(
+                    &(0usize, 0usize),
+                    succsessors!(mem, size),
+                    |(x, y)| (size - 1 - x) + (size - 1 - y),
+                    |&n| n == (size - 1, size - 1),
+                );
+                match astar_result {
+                    Some((v, _)) => path = v,
+                    None => return Ok((x, y)),
+                }
+                // println!("{path:?}");
             }
         }
         Err(Error::msg("No Broken Path"))
