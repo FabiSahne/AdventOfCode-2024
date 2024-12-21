@@ -69,23 +69,7 @@ fn successors(
 
 fn part1<R: BufRead>(reader: R) -> Result<usize> {
     let grid = read_lines_to_vec_vec_char(reader);
-    let (start, goal) = ['S', 'E']
-        .iter()
-        .map(|target| {
-            Vec2::from(
-                grid.iter()
-                    .enumerate()
-                    .filter(|(_, row)| row.contains(target))
-                    .map(|(y, row)| {
-                        let x = row.iter().position(|c| c == target).unwrap();
-                        (x, y)
-                    })
-                    .next()
-                    .unwrap(),
-            )
-        })
-        .next_tuple()
-        .unwrap();
+    let (start, goal) = get_start_and_goal_from_grid(&grid);
     let start_direction = Direction::East;
 
     let result = dijkstra(

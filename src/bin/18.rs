@@ -40,7 +40,7 @@ const TEST: &str = "\
 ";
 
 macro_rules! succsessors {
-    ($mem:ident, $size:ident) => {
+    ($__mem:ident, $__size:ident) => {
         |(x, y)| {
             vec![
                 ((x + 1, *y), 1),
@@ -49,7 +49,7 @@ macro_rules! succsessors {
                 ((*x, y.wrapping_sub(&1)), 1),
             ]
             .into_iter()
-            .filter(|((x, y), _)| *x < $size && *y < $size && $mem[*y][*x] != '#')
+            .filter(|((x, y), _)| *x < $__size && *y < $__size && $__mem[*y][*x] != '#')
             .collect_vec()
         }
     };
@@ -74,10 +74,8 @@ fn main() -> Result<()> {
                 .map(|d| d.parse::<usize>().unwrap())
                 .next_tuple()
                 .unwrap();
-            mem[y][x] = '#'
+            mem[y][x] = '#';
         }
-
-        //print_map(&mem);
 
         let (_, pathlen) = dijkstra(&(0usize, 0usize), succsessors!(mem, size), |n| {
             n == &(size - 1, size - 1)
@@ -111,8 +109,6 @@ fn main() -> Result<()> {
                 .unwrap();
             mem[y][x] = '#';
 
-            // print_map(&mem);
-
             if path.contains(&(x, y)) {
                 let astar_result = astar(
                     &(0usize, 0usize),
@@ -124,7 +120,6 @@ fn main() -> Result<()> {
                     Some((v, _)) => path = v,
                     None => return Ok((x, y)),
                 }
-                // println!("{path:?}");
             }
         }
         Err(Error::msg("No Broken Path"))

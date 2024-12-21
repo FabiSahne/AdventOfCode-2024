@@ -1,4 +1,5 @@
 use crate::Direction::*;
+use itertools::Itertools;
 use std::io::BufRead;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
@@ -75,6 +76,26 @@ pub fn read_lines_to_vec_vec_char<R: BufRead>(reader: R) -> Vec<Vec<char>> {
                 .collect::<Vec<char>>()
         })
         .collect::<Vec<Vec<char>>>()
+}
+
+pub fn get_start_and_goal_from_grid(grid: &[Vec<char>]) -> (Vec2<usize>, Vec2<usize>) {
+    ['S', 'E']
+        .iter()
+        .map(|target| {
+            Vec2::from(
+                grid.iter()
+                    .enumerate()
+                    .filter(|(_, row)| row.contains(target))
+                    .map(|(y, row)| {
+                        let x = row.iter().position(|c| c == target).unwrap();
+                        (x, y)
+                    })
+                    .next()
+                    .unwrap(),
+            )
+        })
+        .next_tuple()
+        .unwrap()
 }
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]

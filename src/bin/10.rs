@@ -2,6 +2,7 @@ use adv_code_2024::*;
 use anyhow::*;
 use code_timing_macros::time_snippet;
 use const_format::concatcp;
+use pathfinding::prelude::count_paths;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -19,7 +20,7 @@ const TEST: &str = "\
 10456732
 ";
 
-const DIRECTIONS: [[usize; 2]; 4] = [[0, 1], [1, 0], [0, usize::MAX], [usize::MAX, 0]];
+// const DIRECTIONS: [[usize; 2]; 4] = [[0, 1], [1, 0], [0, usize::MAX], [usize::MAX, 0]];
 
 fn read_map<R: BufRead>(reader: R) -> Vec<Vec<usize>> {
     reader
@@ -33,47 +34,6 @@ fn read_map<R: BufRead>(reader: R) -> Vec<Vec<usize>> {
         .collect()
 }
 
-// fn is_trailhead(map: &[Vec<usize>], i: usize, j: usize, height: usize) -> bool {
-//     if i > map.len() - 1 || j > map[0].len() - 1 || map[i][j] != height {
-//         false
-//     } else if height == 9 {
-//         true
-//     } else {
-//         let mut part_of_trail = false;
-//         for dir in DIRECTIONS {
-//             if is_trailhead(
-//                 map,
-//                 i.wrapping_add(dir[0]),
-//                 j.wrapping_add(dir[1]),
-//                 height + 1,
-//             ) {
-//                 part_of_trail = true;
-//                 break;
-//             }
-//         }
-//         part_of_trail
-//     }
-//}
-
-fn trailhead_score(map: &[Vec<usize>], i: usize, j: usize, height: usize) -> usize {
-    if i > map.len() - 1 || j > map[0].len() - 1 || map[i][j] != height {
-        0
-    } else if height == 9 {
-        1
-    } else {
-        let mut score = 0;
-        for dir in DIRECTIONS {
-            score += trailhead_score(
-                map,
-                i.wrapping_add(dir[0]),
-                j.wrapping_add(dir[1]),
-                height + 1,
-            );
-        }
-        score
-    }
-}
-
 fn main() -> Result<()> {
     start_day(DAY);
 
@@ -83,10 +43,28 @@ fn main() -> Result<()> {
     fn part1<R: BufRead>(reader: R) -> Result<usize> {
         let topo_map = read_map(reader);
         let mut answer = 0;
-        for (i, row) in topo_map.iter().enumerate() {
-            for (j, height) in row.iter().enumerate() {
-                if *height == 0 {
-                    answer += trailhead_score(&topo_map, i, j, 0);
+        for y in 0..topo_map.len() {
+            for x in 0..topo_map[0].len() {
+                if topo_map[y][x] == 0 {
+                    answer += count_paths(
+                        (x, y),
+                        |&(x, y)| {
+                            let target = topo_map[y][x] + 1;
+                            let mut succ = vec![
+                                (x + 1, y),
+                                (x, y + 1),
+                                (x.wrapping_sub(1), y),
+                                (x, y.wrapping_sub(1)),
+                            ];
+                            succ.retain(|&(x, y)| {
+                                x < topo_map[0].len()
+                                    && y < topo_map.len()
+                                    && topo_map[y][x] == target
+                            });
+                            succ
+                        },
+                        |&(x, y)| topo_map[y][x] == 9,
+                    );
                 }
             }
         }
