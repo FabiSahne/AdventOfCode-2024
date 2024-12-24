@@ -103,8 +103,8 @@ fn main() -> Result<()> {
         let mut queue = VecDeque::new();
         let mut done_reading_wirestates = false;
 
-        let re_op = Regex::new(r"(?<lhs>.+) (?<op>.+) (?<rhs>.+) -> (?<res>.+)")?;
         let re_wire = Regex::new(r"(?<wire>.+): (?<state>\d)")?;
+        let re_op = Regex::new(r"(?<lhs>.+) (?<op>.+) (?<rhs>.+) -> (?<res>.+)")?;
 
         for line in reader.lines() {
             let line = line?;
